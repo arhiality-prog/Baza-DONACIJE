@@ -1,0 +1,611 @@
+{
+  "meta": {
+    "purpose": "Comprehensive brief for ChatGPT to expand and detail the ArhiHub platform concept",
+    "instruction": "Read this entire document. Then produce: (1) A 100x improved concept document with full feature specs, (2) A detailed development script/roadmap, (3) Complete UX flows for every user type, (4) Monetization model with pricing tiers, (5) Database schema suggestions, (6) API endpoint structure, (7) Content strategy. Think of this as building the 'Pornhub of Architecture' — the visual language, organization, engagement mechanics, and content discovery patterns of that platform, but applied to architecture, interior design, construction, and building materials. The platform must be a comprehensive ecosystem where architects, clients, suppliers, contractors, and material manufacturers all find value.",
+    "language_note": "The platform targets Serbian-speaking markets primarily (UI in Serbian Latin), with English as secondary language. All example content is in Serbian.",
+    "created_by": "Claude Code session, based on work with the platform creator",
+    "date": "2026-11-26"
+  },
+
+  "creator": {
+    "name": "Aleksandar Petrović",
+    "role": "Architect and platform founder",
+    "business_areas": [
+      "Architectural design and visualization",
+      "Interior design consulting",
+      "Material specification and sourcing",
+      "Project management for residential and commercial spaces",
+      "Connecting clients with verified suppliers and contractors"
+    ],
+    "vision_statement": "A platform that connects everyone in the architectural and construction ecosystem — architects, interior designers, clients, material suppliers, contractors, and manufacturers — through high-quality visual content, with monetization through premium listings, advertising, and paid visibility boosts."
+  },
+
+  "brand": {
+    "name": "ArhiHub",
+    "tagline": "Arhitektura u kadru",
+    "visual_identity": {
+      "inspiration": "Pornhub — the black/dark background with orange accent color, the logo style (lowercase 'h' in an orange rounded rectangle), the content grid layout, the category tabs, the engagement metrics (views, likes, ratings), the comment sections, the channel/creator pages. This is deliberate and central to the brand identity.",
+      "primary_bg": "#101010",
+      "secondary_bg": "#1b1b1b",
+      "hero_bg": "#211D1A",
+      "accent": "#FF9900",
+      "text": "#F4F1EC",
+      "muted": "#BDB9B3",
+      "border": "#393836",
+      "logo_description": "Text 'Arhi' in white on dark background + 'Hub' in dark text on orange rounded rectangle. Favicon is orange rounded square with lowercase 'h'.",
+      "typography": {
+        "body": "Inter, Arial, sans-serif",
+        "hero_italic": "Georgia, serif (for dramatic headings)",
+        "monospace": "For eyebrow labels and category tags"
+      }
+    },
+    "tone": "Professional but bold. Architecture meets entertainment. High-quality visuals treated like premium content. The platform feels like browsing a curated gallery where every 'video' is an architectural visualization, every 'channel' is an architectural firm, and every 'category' is a building type or service."
+  },
+
+  "current_state": {
+    "description": "Release 1 (Izdanje 1) is a static multi-page site with 24 HTML pages, no backend, localStorage for favorites.",
+    "tech_stack": {
+      "frontend": "Vanilla HTML/CSS/JS, no frameworks, no build tools",
+      "routing": "Folder-based static routing (each page is folder/index.html)",
+      "data": "Hardcoded JS arrays (projekti, kadrovi, materijali)",
+      "storage": "localStorage for saved favorites",
+      "images": "WebP format, two sizes per frame (640px card, 1600px detail)",
+      "hosting": "Static files, deployable anywhere"
+    },
+    "existing_content": {
+      "projects": [
+        {
+          "slug": "sexy-kupatila",
+          "name": "Sexy kupatila",
+          "category": "Kupatila",
+          "description": "Monolitna ploča, rebrasto staklo i bordo kamen. Novi koncept za ArhiHub koji istražuje odnos teških površina i svetlosti.",
+          "frames": ["bordo"],
+          "frame_count": 1
+        },
+        {
+          "slug": "stan-02",
+          "name": "Stan 02",
+          "category": "Enterijeri",
+          "description": "Tri kadra jednog ulaznog prostora. Petrol pozadina, orah niša i crvena svetlosna linija oblikuju prvi utisak stana.",
+          "frames": ["putanja", "orah", "petrol"],
+          "frame_count": 3
+        },
+        {
+          "slug": "floris-fietsen",
+          "name": "Floris Fietsen",
+          "category": "Eksterijeri",
+          "description": "Biciklistička radnja u dve interpretacije — krupni plan izloga posle kiše i široki kadar fasade u sutonu.",
+          "frames": ["floris", "suton"],
+          "frame_count": 2
+        }
+      ],
+      "frames_total": 6,
+      "materials_catalogued": [
+        "Bordo kamen", "Rebrasto staklo", "Zidna armatura",
+        "Linearna rasveta", "Keramika", "Parket",
+        "Opeka", "Čelik", "Staklo", "Orah", "Vertikalne letvice"
+      ],
+      "existing_pages": [
+        "Home (grid of frames with search, category filters)",
+        "Frame detail (large image, description, materials, save, inquiry)",
+        "Project page (all frames of one project)",
+        "Material page (all frames using that material)",
+        "Saved frames (localStorage favorites)",
+        "Inquiry form (generates downloadable TXT)",
+        "About page"
+      ],
+      "features_implemented": [
+        "Diacritics-agnostic search (NFD normalization + đ→dj)",
+        "Category filter buttons (Sve, Kupatila, Enterijeri, Eksterijeri)",
+        "Save/unsave frames to favorites (localStorage)",
+        "Inquiry text generation and export",
+        "Responsive design (1440px → 320px)",
+        "Breadcrumb navigation",
+        "Cross-referencing (frame→project, frame→material, project→materials)"
+      ]
+    }
+  },
+
+  "expanded_vision": {
+    "summary": "Transform ArhiHub from a static portfolio into a full-featured interactive platform — the architecture industry's answer to content platforms. Every architectural firm gets a 'channel', every project is a 'series', every render/visualization is a 'clip'. Users browse, discover, rate, comment, save, and inquire. Revenue comes from premium listings, advertising, boosted visibility, and professional services.",
+
+    "content_types": {
+      "frames_renders": {
+        "description": "High-quality architectural visualizations (current 'kadrovi'). These are the core content — equivalent to 'videos' on the reference platform.",
+        "metadata": ["views", "likes", "saves", "comments", "rating", "upload_date", "resolution", "render_engine"],
+        "display": "Thumbnail grid with hover preview, view count overlay, duration indicator (for video tours), creator avatar"
+      },
+      "video_tours": {
+        "description": "Animated architectural walkthroughs, 360° views, before/after transformations. Premium content type.",
+        "formats": ["MP4 walkthrough", "360° panorama", "Before/After slider", "Timelapse of construction"],
+        "icons": "Play button overlay on thumbnails, duration badge"
+      },
+      "project_stories": {
+        "description": "Full project documentation — from concept to completion. Multi-frame narratives.",
+        "structure": ["Concept sketches", "3D development", "Material selection", "Construction photos", "Final renders", "Client testimonial"]
+      },
+      "material_showcases": {
+        "description": "Detailed material presentations with technical specs, supplier info, pricing ranges.",
+        "data": ["Technical datasheet", "Color/finish variants", "Price range", "Supplier contacts", "Projects using this material", "Similar alternatives"]
+      },
+      "advertisements": {
+        "description": "Sponsored content from material suppliers, furniture manufacturers, lighting companies. Clearly marked as 'Sponzorisano' or 'Promocija'.",
+        "formats": ["Banner ads between content rows", "Sponsored material cards", "Featured supplier profiles", "Promoted project listings"]
+      }
+    },
+
+    "user_types": {
+      "architect_firm": {
+        "role": "Content creator — the 'channel owner'",
+        "features": [
+          "Profile page (like a YouTube channel) with cover image, bio, portfolio grid",
+          "Upload and manage renders/videos/projects",
+          "Receive inquiries from clients",
+          "Analytics dashboard (views, engagement, inquiry conversion)",
+          "Collaborate with suppliers (tag materials, link to suppliers)",
+          "Paid tier: boost visibility, premium badge, priority in search",
+          "Points/rating system based on engagement"
+        ],
+        "monetization": "Free basic profile, paid premium for analytics + boost + badge"
+      },
+      "client": {
+        "role": "Content consumer — the browser/buyer",
+        "features": [
+          "Browse and discover projects by category, style, budget range",
+          "Save favorites, create mood boards/collections",
+          "Leave comments and ratings on projects",
+          "Send inquiries to architects directly",
+          "Compare materials and get quotes",
+          "Get recommendations based on browsing history"
+        ],
+        "monetization": "Free browsing, paid for premium features (mood board export, priority support)"
+      },
+      "supplier_manufacturer": {
+        "role": "Product/material provider",
+        "features": [
+          "Company profile with product catalog",
+          "Link products to projects that use them",
+          "Receive leads from architects and clients",
+          "Advertise products in relevant categories",
+          "Sponsor specific project showcases",
+          "Analytics on product views and inquiries"
+        ],
+        "monetization": "Paid listing, advertising budget, premium placement"
+      },
+      "contractor": {
+        "role": "Execution partner",
+        "features": [
+          "Profile with portfolio of completed work",
+          "Certifications and reviews",
+          "Bid on projects",
+          "Collaborate with architects",
+          "Service area and specialization listing"
+        ],
+        "monetization": "Paid profile, lead generation fees"
+      }
+    },
+
+    "categories_expanded": {
+      "project_categories": [
+        "Kupatila (Bathrooms)",
+        "Enterijeri (Interiors)",
+        "Eksterijeri (Exteriors)",
+        "Kuhinje (Kitchens)",
+        "Spavaće sobe (Bedrooms)",
+        "Dnevne sobe (Living rooms)",
+        "Kancelarije (Offices)",
+        "Restorani i kafići (Restaurants & Cafes)",
+        "Hoteli (Hotels)",
+        "Prodavnice (Retail)",
+        "Javni prostori (Public spaces)",
+        "Fasade (Facades)",
+        "Vrtovi i terase (Gardens & Terraces)",
+        "Bazeni (Pools)",
+        "Wellness & Spa"
+      ],
+      "service_categories": [
+        "Arhitektonsko projektovanje (Architectural design)",
+        "Enterijer dizajn (Interior design)",
+        "3D vizualizacija (3D visualization)",
+        "Izbor materijala (Material selection)",
+        "Nadzor izvođenja (Construction supervision)",
+        "Energetska efikasnost (Energy efficiency)",
+        "Pametne kuće (Smart homes)",
+        "Restauracija (Restoration)",
+        "Urbanizam (Urban planning)",
+        "Pejzažna arhitektura (Landscape architecture)"
+      ],
+      "material_categories": [
+        "Kamen (Stone)",
+        "Drvo (Wood)",
+        "Metal (Metal)",
+        "Staklo (Glass)",
+        "Keramika (Ceramics)",
+        "Rasveta (Lighting)",
+        "Sanitarije (Sanitary ware)",
+        "Podovi (Flooring)",
+        "Zidne obloge (Wall coverings)",
+        "Nameštaj (Furniture)",
+        "Tekstil (Textiles)",
+        "Boje i premazi (Paints & Coatings)"
+      ]
+    },
+
+    "sample_expanded_projects": [
+      {
+        "name": "Loft Dorćol",
+        "category": "Enterijeri",
+        "description": "Industrijski loft u srcu Dorćola. Eksponirani beton, čelične grede i topli drveni akcenti.",
+        "placeholder_image": true
+      },
+      {
+        "name": "Vila Avala",
+        "category": "Eksterijeri",
+        "description": "Moderna porodična vila na padinama Avale. Kamena baza, staklena fasada i zeleni krov.",
+        "placeholder_image": true
+      },
+      {
+        "name": "Restoran Dunavski",
+        "category": "Restorani i kafići",
+        "description": "Restoran sa pogledom na Dunav. Prirodni materijali, indirektna rasveta i otvoren kuhinjski prostor.",
+        "placeholder_image": true
+      },
+      {
+        "name": "Boutique Hotel Skadarlija",
+        "category": "Hoteli",
+        "description": "Butik hotel u renoviranoj zgradi iz 19. veka. Spoj tradicije i savremenog dizajna.",
+        "placeholder_image": true
+      },
+      {
+        "name": "Kancelarija Tech Park",
+        "category": "Kancelarije",
+        "description": "Open-space kancelarija za IT kompaniju. Akustični paneli, zeleni zidovi i fleksibilni radni prostori.",
+        "placeholder_image": true
+      },
+      {
+        "name": "Penthouse Novi Beograd",
+        "category": "Enterijeri",
+        "description": "Dupleks penthouse sa panoramskim pogledom. Minimalistički pristup sa luksuznim materijalima.",
+        "placeholder_image": true
+      },
+      {
+        "name": "Wellness Centar Zlatibor",
+        "category": "Wellness & Spa",
+        "description": "Spa centar integrisan u planinski pejzaž. Lokalni kamen, drvo i voda kao elementi dizajna.",
+        "placeholder_image": true
+      },
+      {
+        "name": "Prodavnica Vina",
+        "category": "Prodavnice",
+        "description": "Vinoteka sa degustacionim prostorom. Hrast, opeka i ambijentalna rasveta.",
+        "placeholder_image": true
+      },
+      {
+        "name": "Kuća na Vodi",
+        "category": "Eksterijeri",
+        "description": "Plutajuća kuća na Savi. Čelik, staklo i cedar. Održivi dizajn sa solarnim panelima.",
+        "placeholder_image": true
+      },
+      {
+        "name": "Master Kupatilo Lux",
+        "category": "Kupatila",
+        "description": "Master kupatilo sa slobodnostojećom kadom, duplim umivaonikom i kišnim tušem u mermeru.",
+        "placeholder_image": true
+      }
+    ],
+
+    "comment_system": {
+      "description": "Comments under every frame/project, styled like the reference platform. Engagement-focused with emoji reactions and playful architectural humor.",
+      "features": [
+        "Threaded comments with likes/dislikes",
+        "Emoji reactions (architecture-themed)",
+        "Verified badge for architects and suppliers",
+        "Pinned comments from project creator",
+        "Sort by: newest, most liked, most relevant"
+      ],
+      "sample_comments": [
+        {
+          "user": "MilanArch92",
+          "avatar_emoji": "👷",
+          "text": "Ovaj prelaz parketa u keramiku je čist 🔥 Ko je dobavljač za linearnu rasvetu?",
+          "likes": 47,
+          "time": "pre 2 dana"
+        },
+        {
+          "user": "InteriorJelena",
+          "avatar_emoji": "💡",
+          "text": "Rebrasto staklo + bordo kamen = kombinacija koju nisam očekivala da radi ovako dobro. Bravo! 💧",
+          "likes": 123,
+          "time": "pre 5 dana",
+          "verified": true,
+          "badge": "Dizajner enterijera"
+        },
+        {
+          "user": "KlijentMarko",
+          "avatar_emoji": "🏠",
+          "text": "Upravo poslao upit za ovo kupatilo. Nadam se da materijali nisu previše skupi 😅",
+          "likes": 89,
+          "time": "pre 1 nedelju"
+        },
+        {
+          "user": "KeramikaPlus",
+          "avatar_emoji": "🧱",
+          "text": "Ovu keramiku imamo u 4 boje. Javite se za uzorak! Šifra: KP-2024-BORDO",
+          "likes": 34,
+          "time": "pre 3 dana",
+          "verified": true,
+          "badge": "Verifikovani dobavljač",
+          "is_sponsored": true
+        },
+        {
+          "user": "NovakDesign",
+          "avatar_emoji": "✏️",
+          "text": "Ta niša u orahu me podseća na japanski pristup — wabi-sabi u beogradskom stanu. Respect. 🌊",
+          "likes": 201,
+          "time": "pre 1 mesec"
+        },
+        {
+          "user": "DobavljačSvetla",
+          "avatar_emoji": "💡",
+          "text": "LED traka u ovom projektu je naš model LS-PRO-3000K. Detalji na profilu ⏰🔔",
+          "likes": 56,
+          "time": "pre 4 dana",
+          "verified": true,
+          "badge": "Verifikovani dobavljač"
+        },
+        {
+          "user": "StudentArh",
+          "avatar_emoji": "📐",
+          "text": "Gledam ovo već treći put danas. Svaki put primetim novi detalj. Ovo je level kome težim 🫧",
+          "likes": 312,
+          "time": "pre 2 nedelje"
+        },
+        {
+          "user": "IzvođačPetar",
+          "avatar_emoji": "🔨",
+          "text": "Radio sam sličan projekat — ta opeka zahteva specifičnu fugnu. DM za savet 👀💦",
+          "likes": 78,
+          "time": "pre 6 dana",
+          "verified": true,
+          "badge": "Verifikovani izvođač"
+        }
+      ],
+      "emoji_reactions": ["🔥", "💧", "🫧", "💡", "🧱", "⏰", "🔔", "👀", "💦", "🌊", "✨", "🏠"],
+      "note": "The emoji and comment tone subtly reference the inspiration platform's engagement culture — water drops, fire, eyes, etc. — but all content is architecture-focused. This creates a playful, engaging atmosphere that sets ArhiHub apart from sterile architecture portfolio sites."
+    },
+
+    "gamification": {
+      "points_system": {
+        "name": "ArhiBodovi",
+        "earning": {
+          "upload_frame": 50,
+          "receive_view": 1,
+          "receive_like": 5,
+          "receive_comment": 10,
+          "receive_save": 15,
+          "receive_inquiry": 100,
+          "complete_profile": 200,
+          "verify_account": 500,
+          "first_project": 300
+        },
+        "levels": [
+          {"name": "Početnik", "min_points": 0, "badge_color": "#777"},
+          {"name": "Dizajner", "min_points": 500, "badge_color": "#4A90D9"},
+          {"name": "Majstor", "min_points": 2000, "badge_color": "#7B61FF"},
+          {"name": "Ekspert", "min_points": 10000, "badge_color": "#FF9900"},
+          {"name": "Legenda", "min_points": 50000, "badge_color": "#FFD700"}
+        ],
+        "paid_boost": {
+          "description": "Users can pay to appear as if they have more engagement. Boosted profiles show enhanced metrics and appear higher in search results.",
+          "options": [
+            "Profile boost (7 days): appears in 'Trending' section",
+            "Project spotlight: pinned in category for 24h",
+            "Enhanced metrics display: shows inflated view/like counts",
+            "Priority in search results for specific categories"
+          ]
+        }
+      },
+      "leaderboards": [
+        "Top architects this month",
+        "Most viewed projects",
+        "Rising stars (new accounts with fast growth)",
+        "Best rated materials",
+        "Most active commenters"
+      ]
+    },
+
+    "monetization_model": {
+      "free_tier": {
+        "name": "Besplatno",
+        "includes": [
+          "Browse all public content",
+          "Save favorites (up to 20)",
+          "Leave comments (3 per day)",
+          "Basic profile (architects/suppliers)",
+          "Upload up to 5 frames",
+          "Receive inquiries (with platform fee per lead)"
+        ]
+      },
+      "premium_tier_architect": {
+        "name": "ArhiHub Pro",
+        "price_suggestion": "€19.99/mesec ili €199/godišnje",
+        "includes": [
+          "Unlimited uploads",
+          "Analytics dashboard (views, engagement, conversion)",
+          "Verified badge",
+          "Priority in search results",
+          "No platform fee on inquiries",
+          "Video tour uploads",
+          "Custom profile URL",
+          "Featured in weekly newsletter",
+          "API access for portfolio integration"
+        ]
+      },
+      "premium_tier_supplier": {
+        "name": "ArhiHub Partner",
+        "price_suggestion": "€49.99/mesec ili €499/godišnje",
+        "includes": [
+          "Full product catalog with specs",
+          "Link products to projects",
+          "Sponsored content placements",
+          "Lead generation dashboard",
+          "Direct messaging with architects",
+          "Analytics on product performance",
+          "Priority in material search",
+          "Verified supplier badge"
+        ]
+      },
+      "advertising": {
+        "formats": [
+          {"type": "Banner", "placement": "Between content rows on home/category pages", "pricing": "CPM (cost per 1000 impressions)"},
+          {"type": "Sponsored card", "placement": "In content grid, marked as 'Sponzorisano'", "pricing": "CPC (cost per click)"},
+          {"type": "Featured project", "placement": "Top of category page", "pricing": "Fixed daily rate"},
+          {"type": "Material spotlight", "placement": "On relevant frame detail pages", "pricing": "CPC"},
+          {"type": "Newsletter inclusion", "placement": "Weekly email to subscribers", "pricing": "Fixed rate per issue"}
+        ]
+      },
+      "marketplace_commission": {
+        "description": "Platform takes a percentage of transactions initiated through ArhiHub",
+        "inquiry_fee": "10% of project value for free-tier architects",
+        "material_referral": "5% commission on material orders placed through platform links"
+      }
+    },
+
+    "platform_features_to_build": {
+      "discovery": [
+        "Category browsing with subcategories",
+        "Advanced search with filters (style, budget, location, materials)",
+        "Trending/popular section",
+        "Recommended for you (based on browsing history)",
+        "New uploads feed",
+        "Collections/playlists curated by editors and users"
+      ],
+      "engagement": [
+        "Comments with threading and emoji reactions",
+        "Like/dislike on frames and projects",
+        "Save to collections (like playlists)",
+        "Share to social media",
+        "Follow architects/firms",
+        "Notifications (new uploads from followed, replies to comments)",
+        "View count with real-time counter"
+      ],
+      "professional_tools": [
+        "Inquiry system (client → architect)",
+        "Quote request system (architect → supplier)",
+        "Project collaboration workspace",
+        "Material comparison tool",
+        "Budget estimator (based on selected materials)",
+        "Specification sheet generator"
+      ],
+      "profiles": [
+        "Architect/firm profile (channel page style)",
+        "Supplier profile with product catalog",
+        "Contractor profile with reviews",
+        "Client profile (private, for managing favorites/inquiries)"
+      ],
+      "content_management": [
+        "Upload wizard for renders (single + batch)",
+        "Video upload with processing",
+        "Project story builder (multi-frame narrative)",
+        "Material tagging system",
+        "Auto-categorization suggestions"
+      ],
+      "admin_and_moderation": [
+        "Content moderation queue",
+        "User verification workflow",
+        "Analytics dashboard (platform-wide)",
+        "Ad management system",
+        "Revenue reporting"
+      ]
+    },
+
+    "ui_reference_patterns": {
+      "home_page": {
+        "layout": "Dark background, orange accent. Top: logo + search bar + user menu. Below: category tabs. Main: grid of frame thumbnails (3-4 columns) with view count overlay, duration badge for videos, creator name. Right sidebar or below: trending, recommended. Footer: links, about, legal.",
+        "reference": "Think Pornhub homepage layout but every thumbnail is an architectural render"
+      },
+      "frame_detail_page": {
+        "layout": "Large render/video player at top. Below: title, creator info with avatar and follow button, view count, like/dislike, save, share. Description with material tags (clickable). Comment section below. Sidebar: related frames, suggested projects, material ads.",
+        "reference": "Think video detail page — the render IS the video, the materials ARE the tags"
+      },
+      "channel_page": {
+        "layout": "Cover image, avatar, firm name, follower count, total views. Tab navigation: Projects, Frames, About, Materials Used. Grid of content below.",
+        "reference": "YouTube channel / Pornhub model page style"
+      },
+      "category_page": {
+        "layout": "Category header with description. Sort options (trending, newest, most viewed, top rated). Subcategory filters. Grid of content. Infinite scroll or pagination.",
+        "reference": "Category browsing page"
+      }
+    },
+
+    "technical_recommendations": {
+      "frontend": "Next.js or Nuxt.js for SSR + static generation. Tailwind CSS for rapid styling with the custom dark+orange theme.",
+      "backend": "Node.js + Express or Django REST framework. PostgreSQL database.",
+      "storage": "AWS S3 or similar for images/videos. CDN for delivery.",
+      "search": "Elasticsearch or Algolia for fast, filtered search.",
+      "auth": "OAuth2 + email/password. Social login (Google, Facebook).",
+      "payments": "Stripe for subscriptions and marketplace transactions.",
+      "analytics": "Custom analytics + Google Analytics. Real-time view counting with Redis.",
+      "deployment": "Docker containers, CI/CD pipeline, staging + production environments."
+    }
+  },
+
+  "chatgpt_instructions": {
+    "task": "You are receiving the complete concept brief for ArhiHub — an architectural platform visually and structurally inspired by Pornhub but serving the architecture, interior design, and construction industry. Your job is to take this concept and improve it 100x. Produce the following deliverables:",
+
+    "deliverables": [
+      {
+        "id": 1,
+        "title": "Enhanced Concept Document",
+        "description": "Take the vision described above and expand it into a comprehensive product concept. Add features I haven't thought of. Identify gaps. Think about what makes platforms like Pornhub, YouTube, Pinterest, and Houzz successful and apply those patterns. Consider network effects, viral loops, and retention mechanics."
+      },
+      {
+        "id": 2,
+        "title": "Detailed Development Script",
+        "description": "A step-by-step development roadmap. Phase 1 (MVP), Phase 2 (Growth), Phase 3 (Monetization), Phase 4 (Scale). For each phase: exact features to build, tech stack decisions, team requirements, timeline estimates, and success metrics."
+      },
+      {
+        "id": 3,
+        "title": "Complete UX Flow Diagrams",
+        "description": "Text-based UX flows for every user journey: architect onboarding, client browsing, supplier listing products, contractor bidding, content upload, inquiry flow, payment flow, comment/engagement flow. Include edge cases."
+      },
+      {
+        "id": 4,
+        "title": "Monetization Strategy",
+        "description": "Detailed pricing with justification. Compare to competitors (Houzz, Archilovers, Architizer). Include projections for user acquisition and revenue at different scales (100, 1000, 10000, 100000 users). Include the 'paid boost' mechanic where users pay to appear more popular."
+      },
+      {
+        "id": 5,
+        "title": "Database Schema",
+        "description": "Full database schema with tables, relationships, and key queries. Include: users, profiles, projects, frames, materials, comments, likes, views, inquiries, subscriptions, payments, ads, analytics events."
+      },
+      {
+        "id": 6,
+        "title": "API Specification",
+        "description": "RESTful API endpoints for all platform operations. Include authentication, pagination, filtering, sorting. Group by domain: auth, users, content, engagement, search, payments, admin."
+      },
+      {
+        "id": 7,
+        "title": "Content Strategy",
+        "description": "How to seed the platform with initial content. How to attract the first 100 architects. How to create engagement before there are many users. Content calendar for social media promotion. SEO strategy for architectural keywords in Serbian market."
+      },
+      {
+        "id": 8,
+        "title": "Supplier/Contractor Ecosystem Design",
+        "description": "Design the full ecosystem where every player has access to a wide network of related suppliers, contractors, and service providers. Include: how suppliers are categorized, how they connect with architects, how clients find them, how the platform facilitates transactions, and how advertising integrates naturally."
+      }
+    ],
+
+    "constraints": [
+      "The visual reference to Pornhub is intentional and must be preserved — it's the brand identity",
+      "Primary market is Serbia/Western Balkans, secondary is broader European market",
+      "The platform must work for small independent architects AND large firms",
+      "Content quality must be high — there should be approval/curation mechanisms",
+      "The comment system must feel alive and engaging, not sterile",
+      "Every user type must have a clear path to value within their first session",
+      "Mobile-first design is essential — most browsing will be on phones"
+    ],
+
+    "context_about_creator": "Aleksandar is an architect who understands both the creative and business sides. He works with clients, suppliers, and contractors daily. He sees that the architecture industry lacks a central platform where all these players can discover each other, showcase work, and transact. The existing platforms (Houzz, Architizer, Archilovers) are either too corporate, too Western-focused, or lack the engagement mechanics that make modern content platforms sticky. ArhiHub aims to be the platform that architects actually enjoy using — where they spend time browsing, engaging, and discovering, not just uploading a portfolio entry once a year."
+  }
+}
