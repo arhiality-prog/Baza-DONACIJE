@@ -1,0 +1,503 @@
+'use strict';
+const B = document.documentElement.dataset.base || './';
+const storageKey = 'arhiHub.saved.v1';
+let favorites = new Set();
+try {
+  const s = JSON.parse(localStorage.getItem(storageKey));
+  if (Array.isArray(s)) favorites = new Set(s.filter(id => kadrovi.some(k => k.id === id)));
+} catch {}
+
+function saveFavorites() {
+  try { localStorage.setItem(storageKey, JSON.stringify([...favorites])); } catch {}
+}
+
+const norm = t => t.toLocaleLowerCase('sr-Latn').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'dj');
+
+function el(tag, text, cls) {
+  const n = document.createElement(tag);
+  if (text) n.textContent = text;
+  if (cls) n.className = cls;
+  return n;
+}
+
+function link(href, text, cls) {
+  const a = el('a', text, cls);
+  a.href = B + href;
+  return a;
+}
+
+function buildHeader() {
+  const header = el('header', null, 'site-header');
+  const wrap = el('div', null, 'wrap');
+  const logoLink = link('', null);
+  logoLink.setAttribute('aria-label', 'ArhiHub početna');
+  const logoImg = el('img');
+  logoImg.src = B + 'assets/logo.svg';
+  logoImg.alt = 'ArhiHub';
+  logoImg.width = 131;
+  logoLink.appendChild(logoImg);
+  const nav = el('nav');
+  nav.appendChild(link('', 'Istraži'));
+  const savedBtn = link('sacuvano/', 'Sačuvano ');
+  const badge = el('span', String(favorites.size), 'badge');
+  savedBtn.appendChild(badge);
+  nav.appendChild(savedBtn);
+  const search = el('div', null, 'search-bar');
+  search.innerHTML = '&#x2315; ';
+  const input = el('input');
+  input.type = 'search';
+  input.id = 'search';
+  input.setAttribute('aria-label', 'Pretraži kadrove');
+  input.placeholder = 'Pretraži materijal, prostor…';
+  search.appendChild(input);
+  wrap.append(logoLink, nav, search);
+  header.appendChild(wrap);
+  return header;
+}
+
+function buildFooter() {
+  const footer = el('footer', null, 'site-footer');
+  const wrap = el('div', null, 'wrap');
+  const img = el('img');
+  img.src = B + 'assets/logo.svg';
+  img.alt = 'ArhiHub';
+  img.width = 86;
+  wrap.append(img, el('span', 'Arhitektura u kadru'), link('o-platformi/', 'O platformi'));
+  footer.appendChild(wrap);
+  return footer;
+}
+
+function buildCard(k) {
+  const a = link('kadar/' + k.id + '/', null, 'card');
+  const img = el('img');
+  img.src = B + 'assets/' + k.id + '-640.webp';
+  img.alt = k.alt || k.naslov;
+  img.loading = 'lazy';
+  const proj = projekti.find(p => p.slug === k.projekat);
+  a.append(img, el('span', (proj ? proj.naziv : k.projekat) + ' / ' + k.kategorija, 'meta'), el('span', k.naslov, 'card-title'));
+  return a;
+}
+
+function breadcrumb(items) {
+  const bc = el('nav', null, 'breadcrumb');
+  bc.setAttribute('aria-label', 'Navigacija');
+  items.forEach((item, i) => {
+    if (i > 0) bc.appendChild(el('span', '/'));
+    if (item.href) {
+      bc.appendChild(link(item.href, item.label));
+    } else {
+      bc.appendChild(el('span', item.label));
+    }
+  });
+  return bc;
+}
+
+// --- Page renderers ---
+
+function renderHome(main) {
+  const params = new URLSearchParams(location.search);
+  let query = params.get('q') || '';
+  let cat = params.get('cat') || 'Sve';
+  let onlySaved = params.get('sacuvano') === '1';
+
+  const hero = el('section', null, 'hero');
+  hero.innerHTML = `
+    <div class="hero-pic"><img src="${B}assets/bordo-1600.webp" alt="Bordo kamena ploča sa svetlim lavaboom i tušem iza rebrastog stakla"></div>
+    <div class="hero-text">
+      <small class="eyebrow">Kolekcija / Kupatila</small>
+      <h1>Sexy<br><i>kupatila.</i></h1>
+      <p>Bordo kamen, rebrasto staklo i poslednji snop popodnevnog svetla.</p>
+      <a href="${B}kadar/bordo/" class="btn-primary">Istraži kadar &#x2197;</a>
+    </div>`;
+  main.appendChild(hero);
+
+  const section = el('section');
+  section.id = 'kadrovi';
+  const head = el('div', null, 'section-head');
+  const title = el('h2');
+  const countSpan = el('span', '', 'count');
+  countSpan.setAttribute('aria-live', 'polite');
+  head.append(title, countSpan);
+  section.appendChild(head);
+
+  const filtersDiv = el('div', null, 'filters');
+  filtersDiv.setAttribute('aria-label', 'Kategorije');
+  section.appendChild(filtersDiv);
+
+  const grid = el('div', null, 'grid');
+  section.appendChild(grid);
+  main.appendChild(section);
+
+  const searchInput = document.getElementById('search');
+  if (searchInput && query) searchInput.value = query;
+
+  function update() {
+    if (searchInput) query = searchInput.value.trim();
+    title.textContent = onlySaved ? 'Sačuvani kadrovi' : 'Izbor kadrova';
+    const matches = kadrovi.filter(k =>
+      (!onlySaved || favorites.has(k.id)) &&
+      (cat === 'Sve' || k.kategorija === cat) &&
+      norm([projekatZaKadar(k)?.naziv || '', k.naslov, k.kategorija, ...k.materijali].join(' ')).includes(norm(query))
+    );
+    countSpan.textContent = 'Prikazano ' + matches.length + ' / ' + kadrovi.length;
+    grid.replaceChildren();
+    for (const k of matches) grid.appendChild(buildCard(k));
+    if (!matches.length) {
+      grid.appendChild(el('p', onlySaved && !favorites.size ? 'Otvori kadar i izaberi „Sačuvaj kadar".' : 'Nema kadrova za ovaj izbor.'));
+      const resetBtn = el('button', 'Prikaži sve kadrove', 'btn-secondary');
+      resetBtn.onclick = () => { onlySaved = false; cat = 'Sve'; query = ''; if (searchInput) searchInput.value = ''; updateUrl(); update(); };
+      grid.appendChild(resetBtn);
+    }
+    filtersDiv.replaceChildren();
+    for (const c of kategorije) {
+      const btn = el('button', c);
+      btn.setAttribute('aria-pressed', String(c === cat));
+      btn.onclick = () => { cat = c; updateUrl(); update(); };
+      filtersDiv.appendChild(btn);
+    }
+  }
+
+  function updateUrl() {
+    const p = new URLSearchParams();
+    if (query) p.set('q', query);
+    if (cat !== 'Sve') p.set('cat', cat);
+    if (onlySaved) p.set('sacuvano', '1');
+    const qs = p.toString();
+    history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
+  }
+
+  if (searchInput) {
+    searchInput.oninput = () => { updateUrl(); update(); };
+  }
+
+  update();
+}
+
+function renderKadar(main, slug) {
+  const k = kadrovi.find(x => x.id === slug);
+  if (!k) { main.appendChild(el('p', 'Kadar nije pronađen.')); return; }
+  const proj = projekatZaKadar(k);
+
+  main.appendChild(breadcrumb([
+    { href: '', label: 'Početna' },
+    { href: 'projekti/' + k.projekat + '/', label: proj ? proj.naziv : k.projekat },
+    { label: k.naslov }
+  ]));
+
+  const img = el('img', null, 'detail-hero');
+  img.src = B + 'assets/' + k.id + '-1600.webp';
+  img.alt = k.alt || k.naslov;
+  main.appendChild(img);
+
+  const info = el('div', null, 'detail-info');
+  info.appendChild(el('small', (proj ? proj.naziv : k.projekat) + ' / ' + k.kategorija, 'eyebrow'));
+  info.appendChild(el('h1', k.naslov));
+  info.appendChild(el('p', k.opis));
+  info.appendChild(el('h3', 'Materijali u kadru'));
+
+  const tags = el('div', null, 'tags');
+  for (const m of k.materijali) {
+    const a = link('materijali/' + materijalSlug(m) + '/', m, 'tag');
+    tags.appendChild(a);
+  }
+  info.appendChild(tags);
+  info.appendChild(el('p', k.poreklo, 'meta'));
+
+  const actions = el('div', null, 'actions');
+  const inquiryBtn = link('upit/?kadar=' + k.id, 'Pripremi upit ↗', 'btn-primary');
+  actions.appendChild(inquiryBtn);
+
+  const saveBtn = el('button', favorites.has(k.id) ? 'Ukloni iz sačuvanih' : 'Sačuvaj kadar', 'btn-secondary');
+  saveBtn.onclick = () => {
+    if (favorites.has(k.id)) favorites.delete(k.id); else favorites.add(k.id);
+    saveFavorites();
+    saveBtn.textContent = favorites.has(k.id) ? 'Ukloni iz sačuvanih' : 'Sačuvaj kadar';
+    document.querySelectorAll('.badge').forEach(b => b.textContent = favorites.size);
+  };
+  actions.appendChild(saveBtn);
+  info.appendChild(actions);
+
+  if (proj && proj.kadrovi.length > 1) {
+    const related = el('div', null, 'related-section');
+    related.appendChild(el('h2', 'Ostali kadrovi projekta'));
+    const rg = el('div', null, 'grid');
+    for (const id of proj.kadrovi) {
+      if (id === k.id) continue;
+      const rk = kadrovi.find(x => x.id === id);
+      if (rk) rg.appendChild(buildCard(rk));
+    }
+    related.appendChild(rg);
+    info.appendChild(related);
+  }
+
+  main.appendChild(info);
+  document.title = k.naslov + ' — ArhiHub';
+}
+
+function renderProjekat(main, slug) {
+  const p = projekti.find(x => x.slug === slug);
+  if (!p) { main.appendChild(el('p', 'Projekat nije pronađen.')); return; }
+
+  main.appendChild(breadcrumb([
+    { href: '', label: 'Početna' },
+    { label: p.naziv }
+  ]));
+
+  const header = el('div', null, 'project-header');
+  header.appendChild(el('small', p.tip, 'eyebrow'));
+  header.appendChild(el('h1', p.naziv));
+  header.appendChild(el('p', p.opis));
+  main.appendChild(header);
+
+  const grid = el('div', null, 'grid');
+  for (const id of p.kadrovi) {
+    const k = kadrovi.find(x => x.id === id);
+    if (k) grid.appendChild(buildCard(k));
+  }
+  main.appendChild(grid);
+
+  const allMats = [...new Set(p.kadrovi.flatMap(id => {
+    const k = kadrovi.find(x => x.id === id);
+    return k ? k.materijali : [];
+  }))];
+
+  if (allMats.length) {
+    const matSection = el('div', null, 'related-section');
+    matSection.appendChild(el('h2', 'Materijali u projektu'));
+    const tags = el('div', null, 'tags');
+    for (const m of allMats) {
+      tags.appendChild(link('materijali/' + materijalSlug(m) + '/', m, 'tag'));
+    }
+    matSection.appendChild(tags);
+    main.appendChild(matSection);
+  }
+
+  document.title = p.naziv + ' — ArhiHub';
+}
+
+function renderMaterijal(main, slug) {
+  const m = materijali.find(x => x.slug === slug);
+  if (!m) { main.appendChild(el('p', 'Materijal nije pronađen.')); return; }
+  const related = kadroviZaMaterijal(m.naziv);
+
+  main.appendChild(breadcrumb([
+    { href: '', label: 'Početna' },
+    { label: m.naziv }
+  ]));
+
+  const header = el('div', null, 'material-header');
+  header.appendChild(el('small', 'Materijal', 'eyebrow'));
+  header.appendChild(el('h1', m.naziv));
+  header.appendChild(el('p', 'Kadrovi u kojima se javlja ovaj materijal.'));
+  main.appendChild(header);
+
+  const grid = el('div', null, 'grid');
+  for (const k of related) grid.appendChild(buildCard(k));
+  if (!related.length) grid.appendChild(el('p', 'Nema kadrova sa ovim materijalom.'));
+  main.appendChild(grid);
+
+  document.title = m.naziv + ' — ArhiHub';
+}
+
+function renderSacuvano(main) {
+  main.appendChild(breadcrumb([
+    { href: '', label: 'Početna' },
+    { label: 'Sačuvano' }
+  ]));
+
+  const header = el('div', null, 'section-head');
+  header.appendChild(el('h2', 'Sačuvani kadrovi'));
+  header.appendChild(el('span', favorites.size + ' kadrova', 'count'));
+  main.appendChild(header);
+
+  if (!favorites.size) {
+    const empty = el('div', null, 'empty-state');
+    empty.appendChild(el('p', 'Nema sačuvanih kadrova.'));
+    empty.appendChild(el('p', 'Otvori kadar i izaberi „Sačuvaj kadar" da ga dodaš ovde.'));
+    empty.appendChild(link('', 'Istraži kadrove', 'btn-primary'));
+    main.appendChild(empty);
+    return;
+  }
+
+  const grid = el('div', null, 'grid');
+  for (const id of favorites) {
+    const k = kadrovi.find(x => x.id === id);
+    if (!k) continue;
+    const card = buildCard(k);
+    const removeBtn = el('button', 'Ukloni', 'btn-secondary');
+    removeBtn.style.marginTop = '8px';
+    removeBtn.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      favorites.delete(id);
+      saveFavorites();
+      renderPage();
+    };
+    const wrapper = el('div');
+    wrapper.appendChild(card);
+    wrapper.appendChild(removeBtn);
+    grid.appendChild(wrapper);
+  }
+  main.appendChild(grid);
+
+  document.title = 'Sačuvano — ArhiHub';
+}
+
+function renderUpit(main) {
+  const params = new URLSearchParams(location.search);
+  const kadarId = params.get('kadar');
+  const k = kadarId ? kadrovi.find(x => x.id === kadarId) : null;
+
+  main.appendChild(breadcrumb([
+    { href: '', label: 'Početna' },
+    { label: 'Pripremi upit' }
+  ]));
+
+  const header = el('div', null, 'material-header');
+  header.appendChild(el('small', 'Upit', 'eyebrow'));
+  header.appendChild(el('h1', 'Pripremi projektni upit'));
+  main.appendChild(header);
+
+  if (k) {
+    const preview = el('div', null, 'inquiry-preview');
+    const img = el('img');
+    img.src = B + 'assets/' + k.id + '-640.webp';
+    img.alt = k.naslov;
+    const div = el('div');
+    const proj = projekatZaKadar(k);
+    div.appendChild(el('small', (proj ? proj.naziv : '') + ' / ' + k.kategorija, 'eyebrow'));
+    div.appendChild(el('strong', k.naslov));
+    div.appendChild(el('p', 'Materijali: ' + k.materijali.join(', ')));
+    preview.append(img, div);
+    main.appendChild(preview);
+  }
+
+  const form = el('div', null, 'inquiry-form');
+
+  if (!k) {
+    const selectLabel = el('label', 'Izaberi kadar');
+    const select = el('select');
+    select.id = 'kadar-select';
+    for (const kk of kadrovi) {
+      const opt = el('option', kk.naslov);
+      opt.value = kk.id;
+      select.appendChild(opt);
+    }
+    select.onchange = () => {
+      const url = new URL(location.href);
+      url.searchParams.set('kadar', select.value);
+      location.href = url.toString();
+    };
+    form.append(selectLabel, select);
+  }
+
+  const scopeLabel = el('label', 'Oblast upita');
+  const scope = el('select');
+  scope.id = 'scope';
+  for (const kind of ['Arhitektonsko rešenje', 'Izbor materijala i opreme']) {
+    scope.appendChild(el('option', kind));
+  }
+
+  const noteLabel = el('label', 'Napomena');
+  const note = el('textarea');
+  note.id = 'note';
+  note.placeholder = 'Šta želiš da primeniš u svom prostoru?';
+
+  const downloadBtn = el('button', 'Preuzmi upit kao tekst', 'btn-primary');
+  downloadBtn.style.marginTop = '20px';
+  downloadBtn.onclick = () => {
+    const target = k || kadrovi.find(x => x.id === document.getElementById('kadar-select')?.value);
+    if (!target) return;
+    const proj = projekatZaKadar(target);
+    const lines = [
+      'ARHI HUB / PROJEKTNI UPIT',
+      '',
+      (proj ? proj.naziv : target.projekat) + ' — ' + target.naslov,
+      'Oblast: ' + scope.value,
+      'Materijali iz kadra: ' + target.materijali.join(', '),
+      '',
+      'Napomena klijenta: ' + (note.value.trim() || '(nije uneta)'),
+      '',
+      'Za dopunu: lokacija, mere, rok i kontakt.'
+    ].join('\n');
+    const blob = new Blob([lines], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = el('a');
+    a.href = url;
+    a.download = 'ArhiHub-upit-' + target.id + '.txt';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  };
+
+  form.append(scopeLabel, scope, noteLabel, note, downloadBtn);
+  main.appendChild(form);
+
+  const info = el('div', null, 'inquiry-note');
+  info.appendChild(el('p', 'Nakon preuzimanja, upit možeš proslediti arhitekti ili dobavljaču putem e-maila.'));
+  info.appendChild(el('p', 'Tvoji podaci se ne šalju — upit ostaje lokalno na tvom uređaju.'));
+  main.appendChild(info);
+
+  document.title = 'Pripremi upit — ArhiHub';
+}
+
+function renderOPlatformi(main) {
+  main.appendChild(breadcrumb([
+    { href: '', label: 'Početna' },
+    { label: 'O platformi' }
+  ]));
+
+  const content = el('div', null, 'about-content');
+  content.innerHTML = `
+    <h1>O platformi</h1>
+    <p><strong>ArhiHub</strong> je arhitektonska platforma Aleksandra Petrovića. Istraži kadar, izdvoj materijale i pripremi upit za svoj prostor.</p>
+    <h2>Svrha</h2>
+    <p>Platforma povezuje arhitekte, klijente i dobavljače kroz konkretne projektne vizualizacije. Svaki kadar prikazuje prostor, materijale i rešenja koja se mogu primeniti.</p>
+    <h2>Kako funkcioniše</h2>
+    <p>Izaberi kadar koji te inspiriše. Pregledaj materijale koji su korišćeni. Sačuvaj omiljene kadrove. Pripremi upit sa konkretnim materijalom i željama — preuzmi ga kao tekst i prosledi arhitekti ili dobavljaču.</p>
+    <h2>Urednička pravila</h2>
+    <p>Objavljeni kadrovi predstavljaju stvarne projektne vizualizacije ili konceptualne studije. Svaki materijal nosi opšti naziv završne obrade. Konkretni proizvodi dobavljača prikazuju se tek nakon verifikacije specifikacije i odobrenja autora projekta.</p>
+    <h2>Predstavljanje proizvoda</h2>
+    <p>Materijali u kadru nose opšti naziv — „bordo kamen", „rebrasto staklo". Kada dobavljač potvrdi konkretan artikal, prikazuju se trgovinski naziv, šifra i kontakt. Plaćeni plasman uvek nosi jasnu oznaku.</p>
+    <h2>Kolekcije</h2>
+    <p>Prvo izdanje — <strong>Sexy kupatila</strong> — istražuje arhitekturu kroz dodir površine, odsjaj, proporciju i svetlo. Izraz „sexy" odnosi se na izraz prostora, ne na sadržaj.</p>
+  `;
+  main.appendChild(content);
+
+  document.title = 'O platformi — ArhiHub';
+}
+
+// --- Routing ---
+
+function renderPage() {
+  const route = document.body.dataset.route || 'home';
+  const slug = document.body.dataset.slug || '';
+
+  document.body.replaceChildren();
+  document.body.appendChild(buildHeader());
+  const main = el('main', null, 'wrap');
+
+  switch (route) {
+    case 'home': renderHome(main); break;
+    case 'kadar': renderKadar(main, slug); break;
+    case 'projekat': renderProjekat(main, slug); break;
+    case 'materijal': renderMaterijal(main, slug); break;
+    case 'sacuvano': renderSacuvano(main); break;
+    case 'upit': renderUpit(main); break;
+    case 'o-platformi': renderOPlatformi(main); break;
+    default: main.appendChild(el('p', 'Stranica nije pronađena.'));
+  }
+
+  document.body.appendChild(main);
+  document.body.appendChild(buildFooter());
+
+  const searchInput = document.getElementById('search');
+  if (searchInput && route !== 'home') {
+    searchInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        location.href = B + '?q=' + encodeURIComponent(searchInput.value);
+      }
+    });
+  }
+}
+
+renderPage();
