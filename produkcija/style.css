@@ -136,6 +136,38 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .inquiry-context-row{display:flex;gap:12px;padding:6px 0}
 .inquiry-context-row+.inquiry-context-row{border-top:1px solid var(--line)}
 
+/* Placeholder cards (demo without photos) */
+.card-placeholder{aspect-ratio:16/10;background:var(--hero-bg);border:1px solid var(--line);border-radius:3px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;padding:16px;gap:4px;position:relative;overflow:hidden}
+.card-placeholder::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent)}
+.card-placeholder-cat{font:600 11px/1.4 monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--accent)}
+.card-placeholder-title{font-size:15px;font-weight:700;letter-spacing:-.02em;color:var(--type);line-height:1.3}
+
+/* Detail hero placeholder */
+.detail-hero-placeholder{background:var(--hero-bg);border:1px solid var(--line);border-radius:4px;padding:clamp(32px,5vw,64px);display:flex;flex-direction:column;gap:12px;position:relative;min-height:200px}
+.detail-hero-placeholder::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent)}
+.detail-hero-cat{font:600 11px/1.4 monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--accent)}
+.detail-hero-title{font-size:clamp(28px,4vw,48px);font-weight:700;letter-spacing:-.045em;line-height:1.1;max-width:20ch}
+.detail-hero-note{font-size:13px;color:var(--muted);margin-top:8px}
+
+/* Status table */
+.status-table{width:100%;border-collapse:collapse;margin:12px 0}
+.status-table th,.status-table td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-size:14px}
+.status-table th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+.status-live{color:#4ade80;font-weight:600;font-size:12px}
+.status-sim{color:var(--accent);font-weight:600;font-size:12px}
+.status-ext{color:var(--muted);font-weight:600;font-size:12px}
+
+/* Comment cards (demo) */
+.comment-card{padding:16px;border:1px solid var(--line);border-radius:8px;margin-top:10px}
+.comment-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.comment-avatar{font-size:20px;line-height:1}
+.comment-user{font-weight:700;font-size:14px}
+.comment-badge{font-size:11px;color:var(--accent);border:1px solid var(--accent);padding:1px 6px;border-radius:3px}
+.comment-sponsor{font-size:11px;color:var(--muted);border:1px solid var(--line);padding:1px 6px;border-radius:3px}
+.comment-time{font-size:12px;color:var(--muted);margin-left:auto}
+.comment-text{font-size:14px;line-height:1.6;margin:8px 0 4px;color:var(--type)}
+.comment-foot{font-size:13px;color:var(--muted)}
+
 /* Footer */
 .site-footer{margin-top:44px;padding:20px 0;border-top:1px solid var(--line)}
 .site-footer .wrap{display:flex;align-items:center;gap:24px}

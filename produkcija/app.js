@@ -70,12 +70,20 @@ function buildFooter() {
 
 function buildCard(k) {
   const a = link('kadar/' + k.id + '/', null, 'card');
-  const img = el('img');
-  img.src = B + 'assets/' + k.id + '-640.webp';
-  img.alt = k.alt || k.naslov;
-  img.loading = 'lazy';
+  if (k.demo) {
+    const ph = el('div', null, 'card-placeholder');
+    ph.appendChild(el('span', k.kategorija, 'card-placeholder-cat'));
+    ph.appendChild(el('span', k.naslov, 'card-placeholder-title'));
+    a.appendChild(ph);
+  } else {
+    const img = el('img');
+    img.src = B + 'assets/' + k.id + '-640.webp';
+    img.alt = k.alt || k.naslov;
+    img.loading = 'lazy';
+    a.appendChild(img);
+  }
   const proj = projekti.find(p => p.slug === k.projekat);
-  a.append(img, el('span', (proj ? proj.naziv : k.projekat) + ' / ' + k.kategorija, 'meta'), el('span', k.naslov, 'card-title'));
+  a.append(el('span', (proj ? proj.naziv : k.projekat) + ' / ' + k.kategorija, 'meta'), el('span', k.naslov, 'card-title'));
   return a;
 }
 
@@ -210,10 +218,18 @@ function renderKadar(main, slug) {
     { label: k.naslov }
   ]));
 
-  const img = el('img', null, 'detail-hero');
-  img.src = B + 'assets/' + k.id + '-1600.webp';
-  img.alt = k.alt || k.naslov;
-  main.appendChild(img);
+  if (k.demo) {
+    const ph = el('div', null, 'detail-hero-placeholder');
+    ph.appendChild(el('span', k.kategorija, 'detail-hero-cat'));
+    ph.appendChild(el('span', k.naslov, 'detail-hero-title'));
+    ph.appendChild(el('span', 'Demo studija — fotografija u pripremi', 'detail-hero-note'));
+    main.appendChild(ph);
+  } else {
+    const img = el('img', null, 'detail-hero');
+    img.src = B + 'assets/' + k.id + '-1600.webp';
+    img.alt = k.alt || k.naslov;
+    main.appendChild(img);
+  }
 
   const info = el('div', null, 'detail-info');
   info.appendChild(el('small', (proj ? proj.naziv : k.projekat) + ' / ' + k.kategorija, 'eyebrow'));
@@ -252,6 +268,29 @@ function renderKadar(main, slug) {
   };
   actions.appendChild(saveBtn);
   info.appendChild(actions);
+
+  const comments = komentariZaKadar(k.id);
+  if (comments.length) {
+    const cSection = el('div', null, 'related-section');
+    cSection.appendChild(el('h2', 'Komentari · Demo'));
+    for (const c of comments) {
+      const cCard = el('div', null, 'comment-card');
+      const cHead = el('div', null, 'comment-head');
+      cHead.appendChild(el('span', c.avatar, 'comment-avatar'));
+      const cUser = el('span', c.korisnik, 'comment-user');
+      cHead.appendChild(cUser);
+      if (c.verifikovan) cHead.appendChild(el('span', '✓ ' + c.oznaka, 'comment-badge'));
+      if (c.sponzor) cHead.appendChild(el('span', 'Sponzorisano', 'comment-sponsor'));
+      cHead.appendChild(el('span', c.vreme, 'comment-time'));
+      cCard.appendChild(cHead);
+      cCard.appendChild(el('p', c.tekst, 'comment-text'));
+      const cFoot = el('div', null, 'comment-foot');
+      cFoot.appendChild(el('span', '♥ ' + c.lajkovi));
+      cCard.appendChild(cFoot);
+      cSection.appendChild(cCard);
+    }
+    info.appendChild(cSection);
+  }
 
   if (proj && proj.kadrovi.length > 1) {
     const related = el('div', null, 'related-section');
@@ -633,6 +672,25 @@ function renderOPlatformi(main) {
     <p>Materijali u kadru nose opšti naziv — „bordo kamen", „rebrasto staklo". Kada dobavljač potvrdi konkretan artikal, prikazuju se trgovinski naziv, šifra i kontakt. Plaćeni plasman uvek nosi jasnu oznaku.</p>
     <h2>Kolekcije</h2>
     <p>Prvo izdanje — <strong>Sexy kupatila</strong> — istražuje arhitekturu kroz dodir površine, odsjaj, proporciju i svetlo. Izraz „sexy" odnosi se na izraz prostora, ne na sadržaj.</p>
+    <h2>Status modula</h2>
+    <table class="status-table">
+      <thead><tr><th>Modul</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Katalog kadrova (6 pravih + 10 demo)</td><td><span class="status-live">Postoji</span></td></tr>
+        <tr><td>Pretraga i filteri</td><td><span class="status-live">Postoji</span></td></tr>
+        <tr><td>Detalj kadra i materijali</td><td><span class="status-live">Postoji</span></td></tr>
+        <tr><td>Lokalno čuvanje kadrova</td><td><span class="status-live">Postoji</span></td></tr>
+        <tr><td>Priprema i preuzimanje upita</td><td><span class="status-live">Postoji</span></td></tr>
+        <tr><td>Servisni direktorijum (8 usluga)</td><td><span class="status-live">Postoji</span></td></tr>
+        <tr><td>Partneri i „Zatraži ponudu"</td><td><span class="status-sim">Simulirano</span> (2 demo profila)</td></tr>
+        <tr><td>Komentari i reakcije</td><td><span class="status-sim">Simulirano</span> (8 demo komentara)</td></tr>
+        <tr><td>Korisnički profili i prijava</td><td><span class="status-ext">Zahteva backend</span></td></tr>
+        <tr><td>Naplata i pretplata</td><td><span class="status-ext">Zahteva integraciju</span></td></tr>
+        <tr><td>ArhiBodovi (gamifikacija)</td><td><span class="status-ext">Zahteva backend</span></td></tr>
+        <tr><td>Oglašavanje i promocije</td><td><span class="status-ext">Zahteva integraciju</span></td></tr>
+        <tr><td>Video ture i 360°</td><td><span class="status-ext">Zahteva medije</span></td></tr>
+      </tbody>
+    </table>
   `;
   main.appendChild(content);
 
