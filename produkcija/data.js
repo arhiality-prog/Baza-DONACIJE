@@ -117,3 +117,97 @@ function kadroviZaMaterijal(naziv) {
 }
 
 const kategorije = ['Sve', ...new Set(kadrovi.map(k => k.kategorija))];
+
+const usluge = [
+  {
+    slug: 'lasersko-snimanje',
+    naziv: 'Lasersko snimanje / BLK360',
+    opis: 'Oblak tačaka i dogovorene osnove postojećeg stanja.',
+    ulazi: 'Adresa, obuhvat, pristup prostoru',
+    isporuka: 'Oblak tačaka i dogovorene osnove postojećeg stanja',
+    materijali: []
+  },
+  {
+    slug: 'archicad-bim',
+    naziv: 'ArchiCAD / BIM i razrada',
+    opis: 'Model, preseci i šeme pozicija iz osnova i nivoa razrade.',
+    ulazi: 'Osnove i nivo razrade',
+    isporuka: 'Model, preseci i šeme pozicija',
+    materijali: []
+  },
+  {
+    slug: 'vizualizacije',
+    naziv: 'Vizualizacije sa zaključanom geometrijom',
+    opis: 'Dnevni i noćni kadar iz iste kamere na osnovu odobrenog modela.',
+    ulazi: 'Model, kamera, odobren materijal',
+    isporuka: 'Dnevni i noćni kadar iz iste kamere',
+    materijali: []
+  },
+  {
+    slug: 'hotelski-fit-out',
+    naziv: 'Hotelski fit-out i stolarija',
+    opis: 'Tipski detalj, tabela količina i dokumentacija za fabriku.',
+    ulazi: 'Tip sobe, sprat, mere i okovi',
+    isporuka: 'Tipski detalj, tabela količina i dokumentacija za fabriku',
+    materijali: ['Orah', 'Vertikalne letvice']
+  },
+  {
+    slug: 'specifikacija-materijala',
+    naziv: 'Specifikacija materijala i nabavka',
+    opis: 'Uporedivi artikli, količine, alternative i RFQ.',
+    ulazi: 'Kadar, budžet, površine i rok',
+    isporuka: 'Uporedivi artikli, količine, alternative i RFQ',
+    materijali: ['Bordo kamen', 'Rebrasto staklo', 'Keramika', 'Parket', 'Opeka', 'Staklo']
+  },
+  {
+    slug: 'dizajn-rasvete',
+    naziv: 'Dizajn rasvete',
+    opis: 'Plan svetiljki, pozicije, detalj ugradnje i scene.',
+    ulazi: 'Osnova, preseci i scenario korišćenja',
+    isporuka: 'Plan svetiljki, pozicije, detalj ugradnje i scene',
+    materijali: ['Linearna rasveta', 'Zidna armatura']
+  },
+  {
+    slug: 'montazne-kuce',
+    naziv: 'Montažne kuće i varijante fasade',
+    opis: 'Varijante volumena i uporedni prikazi fasada.',
+    ulazi: 'Parcela, program i tehnički sistem',
+    isporuka: 'Varijante volumena i uporedni prikazi',
+    materijali: []
+  },
+  {
+    slug: 'ai-alati',
+    naziv: 'AI alati za projektne biroe',
+    opis: 'Pilot automatizacije i kriterijum provere rezultata.',
+    ulazi: 'Uzorak radnog procesa i izlaznog dokumenta',
+    isporuka: 'Pilot automatizacije i kriterijum provere rezultata',
+    materijali: []
+  }
+];
+
+const partneri = [
+  {
+    slug: 'arhi-studio-petrovic',
+    naziv: 'ARHI Studio Petrović',
+    tip: 'Biro',
+    usluge: ['dizajn-rasvete', 'vizualizacije', 'specifikacija-materijala', 'archicad-bim', 'lasersko-snimanje'],
+    opis: 'Projektovanje rasvete, vizualizacije i specifikacije za enterijere i javne prostore.',
+    status: 'Demo profil'
+  },
+  {
+    slug: 'svetlo-doo',
+    naziv: 'Svetlo d.o.o.',
+    tip: 'Dobavljač',
+    usluge: ['dizajn-rasvete'],
+    opis: 'Linearne LED sisteme i arhitektonsku rasvetu — konsultacija, isporuka i montaža.',
+    status: 'Demo profil'
+  }
+];
+
+function uslugeZaMaterijal(naziv) {
+  return usluge.filter(u => u.materijali.includes(naziv));
+}
+
+function partneriZaUslugu(slug) {
+  return partneri.filter(p => p.usluge.includes(slug));
+}

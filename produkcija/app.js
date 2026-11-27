@@ -38,6 +38,7 @@ function buildHeader() {
   logoLink.appendChild(logoImg);
   const nav = el('nav');
   nav.appendChild(link('', 'Istraži'));
+  nav.appendChild(link('usluge/', 'Usluge'));
   const savedBtn = link('sacuvano/', 'Sačuvano ');
   const badge = el('span', String(favorites.size), 'badge');
   savedBtn.appendChild(badge);
@@ -90,6 +91,31 @@ function breadcrumb(items) {
     }
   });
   return bc;
+}
+
+function buildServiceCard(u) {
+  const card = link('usluge/' + u.slug + '/', null, 'service-card');
+  card.appendChild(el('span', u.naziv, 'service-card-title'));
+  card.appendChild(el('span', u.opis, 'service-card-desc'));
+  const partners = partneriZaUslugu(u.slug);
+  if (partners.length) {
+    card.appendChild(el('span', partners.length + (partners.length === 1 ? ' partner' : ' partnera'), 'service-card-badge'));
+  }
+  return card;
+}
+
+function buildPartnerCard(p, uslugaSlug, kadarId) {
+  const card = el('div', null, 'partner-card');
+  const avatar = el('div', p.naziv.charAt(0), 'partner-avatar');
+  const info = el('div', null, 'partner-info');
+  info.appendChild(el('span', p.naziv, 'partner-name'));
+  info.appendChild(el('span', p.tip, 'partner-type'));
+  info.appendChild(el('span', p.opis, 'partner-desc'));
+  if (p.status) info.appendChild(el('span', p.status, 'partner-status'));
+  const qs = 'usluga=' + uslugaSlug + '&partner=' + p.slug + (kadarId ? '&kadar=' + kadarId : '');
+  const btn = link('upit/?' + qs, 'Zatraži ponudu ↗', 'btn-primary btn-sm');
+  card.append(avatar, info, btn);
+  return card;
 }
 
 // --- Page renderers ---
@@ -203,6 +229,16 @@ function renderKadar(main, slug) {
   info.appendChild(tags);
   info.appendChild(el('p', k.poreklo, 'meta'));
 
+  const relatedServices = [...new Set(k.materijali.flatMap(m => uslugeZaMaterijal(m)))];
+  if (relatedServices.length) {
+    info.appendChild(el('h3', 'Povezane usluge'));
+    const svcTags = el('div', null, 'tags');
+    for (const u of relatedServices) {
+      svcTags.appendChild(link('usluge/' + u.slug + '/?kadar=' + k.id, u.naziv, 'tag tag-service'));
+    }
+    info.appendChild(svcTags);
+  }
+
   const actions = el('div', null, 'actions');
   const inquiryBtn = link('upit/?kadar=' + k.id, 'Pripremi upit ↗', 'btn-primary');
   actions.appendChild(inquiryBtn);
@@ -296,6 +332,18 @@ function renderMaterijal(main, slug) {
   if (!related.length) grid.appendChild(el('p', 'Nema kadrova sa ovim materijalom.'));
   main.appendChild(grid);
 
+  const relSvc = uslugeZaMaterijal(m.naziv);
+  if (relSvc.length) {
+    const svcSection = el('div', null, 'related-section');
+    svcSection.appendChild(el('h2', 'Povezane usluge'));
+    const svcCards = el('div', null, 'service-grid');
+    for (const u of relSvc) {
+      svcCards.appendChild(buildServiceCard(u));
+    }
+    svcSection.appendChild(svcCards);
+    main.appendChild(svcSection);
+  }
+
   document.title = m.naziv + ' — ArhiHub';
 }
 
@@ -346,7 +394,11 @@ function renderSacuvano(main) {
 function renderUpit(main) {
   const params = new URLSearchParams(location.search);
   const kadarId = params.get('kadar');
+  const uslugaSlug = params.get('usluga');
+  const partnerSlug = params.get('partner');
   const k = kadarId ? kadrovi.find(x => x.id === kadarId) : null;
+  const u = uslugaSlug ? usluge.find(x => x.slug === uslugaSlug) : null;
+  const p = partnerSlug ? partneri.find(x => x.slug === partnerSlug) : null;
 
   main.appendChild(breadcrumb([
     { href: '', label: 'Početna' },
@@ -372,6 +424,26 @@ function renderUpit(main) {
     main.appendChild(preview);
   }
 
+  if (u || p) {
+    const ctx = el('div', null, 'inquiry-context');
+    if (u) {
+      const uRow = el('div', null, 'inquiry-context-row');
+      uRow.appendChild(el('span', 'Usluga', 'detail-label'));
+      uRow.appendChild(el('span', u.naziv));
+      ctx.appendChild(uRow);
+    }
+    if (p) {
+      const pRow = el('div', null, 'inquiry-context-row');
+      pRow.appendChild(el('span', 'Partner', 'detail-label'));
+      const pInfo = el('span');
+      pInfo.appendChild(el('strong', p.naziv));
+      pInfo.appendChild(document.createTextNode(' · ' + p.tip));
+      pRow.appendChild(pInfo);
+      ctx.appendChild(pRow);
+    }
+    main.appendChild(ctx);
+  }
+
   const form = el('div', null, 'inquiry-form');
 
   if (!k) {
@@ -394,14 +466,17 @@ function renderUpit(main) {
   const scopeLabel = el('label', 'Oblast upita');
   const scope = el('select');
   scope.id = 'scope';
-  for (const kind of ['Arhitektonsko rešenje', 'Izbor materijala i opreme']) {
-    scope.appendChild(el('option', kind));
+  const scopeOptions = ['Arhitektonsko rešenje', 'Izbor materijala i opreme', 'Dizajn rasvete', 'Specifikacija i nabavka', 'Vizualizacija'];
+  for (const kind of scopeOptions) {
+    const opt = el('option', kind);
+    if (u && kind.toLowerCase().includes(u.naziv.toLowerCase().split(' ')[0])) opt.selected = true;
+    scope.appendChild(opt);
   }
 
   const noteLabel = el('label', 'Napomena');
   const note = el('textarea');
   note.id = 'note';
-  note.placeholder = 'Šta želiš da primeniš u svom prostoru?';
+  note.placeholder = u ? 'Opiši šta ti treba — mere, rokove, posebne zahteve…' : 'Šta želiš da primeniš u svom prostoru?';
 
   const downloadBtn = el('button', 'Preuzmi upit kao tekst', 'btn-primary');
   downloadBtn.style.marginTop = '20px';
@@ -415,12 +490,12 @@ function renderUpit(main) {
       (proj ? proj.naziv : target.projekat) + ' — ' + target.naslov,
       'Oblast: ' + scope.value,
       'Materijali iz kadra: ' + target.materijali.join(', '),
-      '',
-      'Napomena klijenta: ' + (note.value.trim() || '(nije uneta)'),
-      '',
-      'Za dopunu: lokacija, mere, rok i kontakt.'
-    ].join('\n');
-    const blob = new Blob([lines], { type: 'text/plain;charset=utf-8' });
+    ];
+    if (u) lines.push('Usluga: ' + u.naziv);
+    if (p) lines.push('Partner: ' + p.naziv + ' (' + p.tip + ')');
+    lines.push('', 'Napomena klijenta: ' + (note.value.trim() || '(nije uneta)'), '', 'Za dopunu: lokacija, mere, rok i kontakt.');
+    const text = lines.join('\n');
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = el('a');
     a.href = url;
@@ -438,6 +513,104 @@ function renderUpit(main) {
   main.appendChild(info);
 
   document.title = 'Pripremi upit — ArhiHub';
+}
+
+function renderUsluge(main) {
+  main.appendChild(breadcrumb([
+    { href: '', label: 'Početna' },
+    { label: 'Usluge' }
+  ]));
+
+  const header = el('div', null, 'material-header');
+  header.appendChild(el('small', 'Servisni direktorijum', 'eyebrow'));
+  header.appendChild(el('h1', 'Usluge'));
+  header.appendChild(el('p', 'Od detalja koji vidiš do osobe koja ume da ga nacrta, isporuči ili izvede.'));
+  main.appendChild(header);
+
+  const grid = el('div', null, 'service-grid');
+  for (const u of usluge) grid.appendChild(buildServiceCard(u));
+  main.appendChild(grid);
+
+  document.title = 'Usluge — ArhiHub';
+}
+
+function renderUsluga(main, slug) {
+  const u = usluge.find(x => x.slug === slug);
+  if (!u) { main.appendChild(el('p', 'Usluga nije pronađena.')); return; }
+  const params = new URLSearchParams(location.search);
+  const kadarId = params.get('kadar');
+  const k = kadarId ? kadrovi.find(x => x.id === kadarId) : null;
+
+  main.appendChild(breadcrumb([
+    { href: '', label: 'Početna' },
+    { href: 'usluge/', label: 'Usluge' },
+    { label: u.naziv }
+  ]));
+
+  const header = el('div', null, 'material-header');
+  header.appendChild(el('small', 'Usluga', 'eyebrow'));
+  header.appendChild(el('h1', u.naziv));
+  header.appendChild(el('p', u.opis));
+  main.appendChild(header);
+
+  const details = el('div', null, 'service-details');
+  const row1 = el('div', null, 'service-detail-row');
+  row1.appendChild(el('span', 'Potrebni ulazi', 'detail-label'));
+  row1.appendChild(el('span', u.ulazi));
+  const row2 = el('div', null, 'service-detail-row');
+  row2.appendChild(el('span', 'Isporuka', 'detail-label'));
+  row2.appendChild(el('span', u.isporuka));
+  details.append(row1, row2);
+  main.appendChild(details);
+
+  if (k) {
+    const ctx = el('div', null, 'inquiry-preview');
+    const img = el('img');
+    img.src = B + 'assets/' + k.id + '-640.webp';
+    img.alt = k.naslov;
+    const div = el('div');
+    const proj = projekatZaKadar(k);
+    div.appendChild(el('small', (proj ? proj.naziv : '') + ' / ' + k.kategorija, 'eyebrow'));
+    div.appendChild(el('strong', k.naslov));
+    div.appendChild(el('p', 'Materijali: ' + k.materijali.join(', ')));
+    ctx.append(img, div);
+    main.appendChild(ctx);
+  }
+
+  if (u.materijali.length) {
+    const matSection = el('div', null, 'related-section');
+    matSection.appendChild(el('h2', 'Povezani materijali'));
+    const tags = el('div', null, 'tags');
+    for (const m of u.materijali) {
+      tags.appendChild(link('materijali/' + materijalSlug(m) + '/', m, 'tag'));
+    }
+    matSection.appendChild(tags);
+    main.appendChild(matSection);
+  }
+
+  const partners = partneriZaUslugu(slug);
+  const partnerSection = el('div', null, 'related-section');
+  partnerSection.appendChild(el('h2', 'Partneri'));
+  if (partners.length) {
+    for (const p of partners) {
+      partnerSection.appendChild(buildPartnerCard(p, slug, kadarId));
+    }
+  } else {
+    partnerSection.appendChild(el('p', 'Još nema prijavljenih partnera za ovu uslugu.'));
+  }
+  main.appendChild(partnerSection);
+
+  const relatedKadrovi = kadrovi.filter(kk => kk.materijali.some(m => u.materijali.includes(m)));
+  if (relatedKadrovi.length) {
+    const kadSection = el('div', null, 'related-section');
+    kadSection.appendChild(el('h2', 'Kadrovi sa povezanim materijalima'));
+    const grid = el('div', null, 'grid');
+    for (const kk of relatedKadrovi) grid.appendChild(buildCard(kk));
+    kadSection.appendChild(grid);
+    main.appendChild(kadSection);
+  }
+
+  document.title = u.naziv + ' — ArhiHub';
 }
 
 function renderOPlatformi(main) {
@@ -483,6 +656,8 @@ function renderPage() {
     case 'materijal': renderMaterijal(main, slug); break;
     case 'sacuvano': renderSacuvano(main); break;
     case 'upit': renderUpit(main); break;
+    case 'usluge': renderUsluge(main); break;
+    case 'usluga': renderUsluga(main, slug); break;
     case 'o-platformi': renderOPlatformi(main); break;
     default: main.appendChild(el('p', 'Stranica nije pronađena.'));
   }
